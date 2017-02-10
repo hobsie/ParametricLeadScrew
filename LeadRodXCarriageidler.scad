@@ -5,14 +5,16 @@ $fn=32; // Global fragment smoothing value.
 // but there's still quite a lot of hardcoded values in there.
 // Be aware that I tend to go quite narrow with screw holes as I like to tap them and get a good thread, you may need to 
 
+hasBearingDivider = true; // Adds a bearing divider in the bearing slot if true
+
 // You can adjust the following variables if your vitamin parts and alignment don't match the defaults
 linearBearingInnerRadius = 7.5; // This should match the radius of the linear bearings
 linearBearingOuterRadius = 10.5; // Bearing housing wall thickness is this value minus linearBearingInnerRadius
 linearBearingHeight = 25.5; // This is the height of the enclosure for the linear bearing, not neccisarily the length of the bearing itself
 GapBetweenLinearBearings = 9; // A stopper will be created between the linear bearings with this height to create a gap
 
-leadRodCouplingInnerRadius = 5.1; // Lead rod coupling inner radius. If you want to insert the shaft of your lead rod bearing, you should se this value to match
-leadRodCouplingOuterRadius = 11; // Lead rod couple inner radius. Should match the total width of the lead rod bearing
+leadRodCouplingInnerRadius = 5.1; // Lead rod coupling inner radius. If you want to insert the shaft of your lead rod bearing, you should set this value to match
+leadRodCouplingOuterRadius = 11; // Lead rod coupling inner radius. Should match the total width of the lead rod bearing
 leadRodCouplingHeight = 10; // 10mm seems to be a good value for this
 
 smoothRodRadius = 4.05; // Radius of your X axis smooth rods. Go ever so slightly over to help with fit
@@ -54,7 +56,10 @@ module LinearBearingHousingExtras(bodyHeight, linearBearingOuterRadius, linearBe
     linearBearingStopperYPos = linearBearingYPos + linearBearingInnerRadius;
     translate([linearBearingOuterRadius+5,linearBearingYPos,0]) rotate(a=15, v=[0,0,1]) translate([0,-linearBearingOuterRadius+1.5,0]) cylinder(h=bodyHeight,r=1.5);
     translate([linearBearingOuterRadius+5,linearBearingYPos,0]) rotate(a=-15, v=[0,0,1]) translate([0,-linearBearingOuterRadius+1.5,0]) cylinder(h=bodyHeight,r=1.5);
-    translate([linearBearingOuterRadius+5, linearBearingStopperYPos, bodyHeight/2]) cube([linearBearingOuterRadius*2, 3, 9], center = true);
+	if(hasBearingDivider == true)
+	{
+		translate([linearBearingOuterRadius+5, linearBearingStopperYPos, bodyHeight/2]) cube([linearBearingOuterRadius*2, 3, 9], center = true);
+	}
 }
 
 module mainBody(height, leadHeight, linearRadius, leadRadius, linearLeadDist, linearYOffset, leadRodYaxisOffset) {

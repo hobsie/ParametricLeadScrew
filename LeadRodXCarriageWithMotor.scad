@@ -10,6 +10,7 @@ leadRodBearingType = 0; // 0 = 4 screw holes, 1 = 3 screw holes
 hasZStopScrew = true; // Setting this to true will add a section to screw in screw you can use to adjust z-stop min
 hasXStopMount = true; // Setting this to true will add a mount for a X-min switch
 hasCableChainMount = true; // Setting this to true will add 2 holes above the motor section to attach a cable chain mount
+hasBearingDivider = true; // Adds a bearing divider in the bearing slot if true
 
 // You can adjust the following variables if your vitamin parts and alignment don't match the defaults
 linearBearingInnerRadius = 7.5; // This should match the radius of the linear bearings
@@ -17,8 +18,8 @@ linearBearingOuterRadius = 10.5; // Bearing housing wall thickness is this value
 linearBearingHeight = 25.5; // This is the height of the enclosure for the linear bearing, not neccisarily the length of the bearing itself
 GapBetweenLinearBearings = 9; // A stopper will be created between the linear bearings with this height to create a gap
 
-leadRodCouplingInnerRadius = 5.1; // Lead rod coupling inner radius. If you want to insert the shaft of your lead rod bearing, you should se this value to match
-leadRodCouplingOuterRadius = 11; // Lead rod couple inner radius. Should match the total width of the lead rod bearing
+leadRodCouplingInnerRadius = 5.1; // Lead rod coupling inner radius. If you want to insert the shaft of your lead rod bearing, you should set this value to match
+leadRodCouplingOuterRadius = 11; // Lead rod coupling inner radius. Should match the total width of the lead rod bearing
 leadRodCouplingHeight = 10; // 10mm seems to be a good value for this
 
 smoothRodRadius = 4.05; // Radius of your X axis smooth rods. Go ever so slightly over to help with fit
@@ -117,7 +118,10 @@ module LinearBearingHousingExtras(bodyHeight, linearBearingOuterRadius, linearBe
     linearBearingStopperYPos = linearBearingYPos + linearBearingInnerRadius;
     translate([linearBearingOuterRadius+20,linearBearingYPos,0]) rotate(a=15, v=[0,0,1]) translate([0,-linearBearingOuterRadius+1.5,0]) cylinder(h=bodyHeight,r=1.5);
     translate([linearBearingOuterRadius+20,linearBearingYPos,0]) rotate(a=-15, v=[0,0,1]) translate([0,-linearBearingOuterRadius+1.5,0]) cylinder(h=bodyHeight,r=1.5);
-    translate([linearBearingOuterRadius+20, linearBearingStopperYPos, bodyHeight/2]) cube([linearBearingOuterRadius*2, 3, 9], center = true);
+	if(hasBearingDivider == true)
+	{
+		translate([linearBearingOuterRadius+20, linearBearingStopperYPos, bodyHeight/2]) cube([linearBearingOuterRadius*2, 3, 9], center = true);
+	}
 }
 
 module mainBody(height, leadHeight, linearRadius, leadRadius, linearLeadDist, linearYOffset, leadRodYaxisOffset) 
@@ -252,6 +256,3 @@ module checkBodyHeight(linearBearingHeight, GapBetweenLinearBearings, smoothRodR
         echo(str("<font color=\"red\"><b><br>Warning: Body height calculated from linear bearing values is shorter than height calculated from smooth rod values<br>linearBearingBodyHeight=",linearBearingBodyHeight,"<br>smoothRodBodyHeight=",smoothRodBodyHeight,"<br></b></font>"));
     }
 }
-
-
-
