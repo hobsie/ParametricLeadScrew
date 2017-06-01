@@ -1,46 +1,15 @@
-$fn=32; // Global fragment smoothing value.
+include <Settings.scad>
 
-// Notes: 
-// I have tried to expose some of the more common parameters that you might need to tweak to fit the parts to your setup
-// but there's still quite a lot of hardcoded values in there.
-// Be aware that I tend to go quite narrow with screw holes as I like to tap them and get a good thread, you may need to 
-fudge = 0.01; // Variable to overcome z fighting in the preview
-
-// Options: The following variables are optional parameters
-leadRodBearingType = 0; // 0 = 4 screw holes, 1 = 3 screw holes
 hasZStopScrew = true; // Setting this to true will add a section to screw in screw you can use to adjust z-stop min
-hasXStopMount = true; // Setting this to true will add a mount for a X-min switch
+hasXStopMount = false; // Setting this to true will add a mount for a X-min switch
 hasCableChainMount = true; // Setting this to true will add 2 holes above the motor section to attach a cable chain mount
 hasBearingDivider = true; // Adds a bearing divider in the bearing slot if true
-
-// You can adjust the following variables if your vitamin parts and alignment don't match the defaults
-linearBearingInnerRadius = 7.5; // This should match the radius of the linear bearings
-linearBearingOuterRadius = 10.5; // Bearing housing wall thickness is this value minus linearBearingInnerRadius
-linearBearingHeight = 25.5; // This is the height of the enclosure for the linear bearing, not neccisarily the length of the bearing itself
-GapBetweenLinearBearings = 9; // A stopper will be created between the linear bearings with this height to create a gap
-
-leadRodCouplingInnerRadius = 5.1; // Lead rod coupling inner radius. If you want to insert the shaft of your lead rod bearing, you should set this value to match
-leadRodCouplingOuterRadius = 11; // Lead rod coupling inner radius. Should match the total width of the lead rod bearing
-leadRodCouplingHeight = 10; // 10mm seems to be a good value for this
-
-smoothRodRadius = 4.05; // Radius of your X axis smooth rods. Go ever so slightly over to help with fit
-smoothRodInsertLength = 45; // Distance into the printed part that the X axis smooth rod can go - may need altering depending on the length of your X smooth rods
-distanceBetweenSmoothRods = 45; // The vertical distance between the center points of the smooth rods
-
-beltTensionVoidHeight = 31; // Height of the void through the center of the part for the belt tensor
-beltTensionVoidWidth = 10; // This value should be wide enough to house the belt or belt tensor
-beltTensionVoidLength = 58; // Depth of the cavity
-BeltTensionVoidVerticalOffset = 0; // The tension void will be position equally between the smooth rod holes unless offset
-
-distanceBetweenSmoothRodAndLinearBearing = 15;
-distanceBetweenLinearBearingAndLeadRod = 18; // X axis distance from the center of the linear bearing to the center of the lead rod
-leadRodYaxisOffset = 0; // A positive value here will move the lead rod center away from the main body in the X axis, a negative value will be closer
-leadRodScrewHoleRadius = 1.75; // Screw hole size for the lead rod bearing
-leadRodScrewHoleDistance = 2.5; // Linear distance direct from screw hole center to the leadRodCouplingInnerRadius
 
 // Calculated values
 checkBodyHeight(linearBearingHeight, GapBetweenLinearBearings, smoothRodRadius, distanceBetweenSmoothRods);
 bodyHeight = calculateBodyHeight(linearBearingHeight, GapBetweenLinearBearings, smoothRodRadius, distanceBetweenSmoothRods);
+
+use <Modules.scad>
 
 difference() 
 {
@@ -207,59 +176,3 @@ module smoothRodAndBeltCavity(bodyHeight, smoothRodRadius, smoothRodInsertLength
     translate([64 + 15.5, 2 + fudge, (bodyHeight / 2) - (31 / 2)]) rotate(a = 90, v = [1, 0, 0]) cylinder(h = 2 + fudge * 2, r = 3);
 }
 
-module cubeWithVerticalFilletsRadialWidth(length, width, height)
-{
-    hull()
-    {
-        translate([width / 2, width / 2 , 0]) cylinder(d = width, h = height);
-        translate([length - (width / 2), width / 2, 0]) cylinder(d = width, h = height);
-    } 
-}
-
-module cubeWithVerticalFillets(length, width, height, radius) {
-    diameter = radius * 2;
-    translate([radius, radius, 0]) {
-        minkowski() {
-            cube([length - diameter, width - diameter, height / 2]);
-            cylinder(r = radius, h = height / 2);
-        } 
-    }
-}
-
-module cubeWithXHorizontalFillets(length, width, height, radius)
-{
-    diameter = radius * 2;
-    translate([0, radius / 2, radius / 2])
-	{
-        minkowski()
-		{
-            cube([length / 2, width - radius, height - radius]);
-            rotate(a = 90, v = [0, 1, 0]) cylinder(r = radius / 2, h = length / 2);
-        } 
-    }
-}
-
-module hexagonWithFillets(height, radius, filletRadius)
-{
-    hull()
-	{
-        rotate(a = 60, v = [0, 0, 1]) translate([radius - filletRadius, 0, 0]) cylinder(h = height, r = filletRadius);
-        rotate(a = 120, v = [0, 0, 1]) translate([radius - filletRadius, 0, 0]) cylinder(h = height, r = filletRadius);
-        rotate(a = 180, v = [0, 0, 1]) translate([radius - filletRadius, 0, 0]) cylinder(h = height, r = filletRadius);
-        rotate(a = 240, v = [0, 0, 1]) translate([radius - filletRadius, 0, 0]) cylinder(h = height, r = filletRadius);
-        rotate(a = 300, v = [0, 0, 1]) translate([radius - filletRadius, 0, 0]) cylinder(h = height, r = filletRadius);
-        rotate(a = 360, v = [0, 0, 1]) translate([radius - filletRadius, 0, 0]) cylinder(h = height, r = filletRadius);
-    }
-}
-
-function calculateBodyHeight(linearBearingHeight, GapBetweenLinearBearings) = (linearBearingHeight * 2) + GapBetweenLinearBearings;
-
-module checkBodyHeight(linearBearingHeight, GapBetweenLinearBearings, smoothRodRadius, distanceBetweenSmoothRods)
-{
-    linearBearingBodyHeight = ((linearBearingHeight * 2) + GapBetweenLinearBearings);
-    smoothRodBodyHeight = ((smoothRodRadius * 2) + distanceBetweenSmoothRods + 6);
-    if(linearBearingBodyHeight < smoothRodBodyHeight)
-	{
-		echo(str("<font color=\"red\"><b><br>Warning: Body height calculated from linear bearing values is shorter than height calculated from smooth rod values<br>linearBearingBodyHeight=",linearBearingBodyHeight,"<br>smoothRodBodyHeight=",smoothRodBodyHeight,"<br></b></font>"));
-    }
-}
