@@ -46,6 +46,23 @@ module hexagonWithFillets(height, radius, filletRadius)
     }
 }
 
+module ring(outer, inner, height, _fudge = 0.01)
+{
+	difference() {
+		cylinder(r = outer, h = height);
+		translate([0,0,-_fudge])
+			cylinder(r = inner, h = height + 2 + _fudge);
+	}
+	
+}
+
+module ScrewHole(screwLength, screwRadius, headRadius, headHeight, nutRadius, nutHeight, _fudge = 0.01)
+{
+    translate([0, 0, -_fudge]) cylinder(r = screwRadius, h = screwLength + 2 * _fudge);
+    translate([0, 0, -_fudge]) cylinder(r = headRadius, h = headHeight + _fudge);
+    translate([0, 0, screwLength - nutHeight]) cylinder(r = nutRadius, h = nutHeight + _fudge * 2, $fn = 6);
+    
+}
 
 function calculateBodyHeight(linearBearingHeight, GapBetweenLinearBearings) = (linearBearingHeight * 2) + GapBetweenLinearBearings;
 

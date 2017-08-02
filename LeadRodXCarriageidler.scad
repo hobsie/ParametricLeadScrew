@@ -1,14 +1,13 @@
 include <Settings.scad>
 
-beltTensionerType = 0; // 0 = No separate tensioner, 1 = Separate tensioner, any other: External belt tensioner
-beltTensionerScrewHoleRadius = 2; // Radius of the screw hole used to either attach a tensioner or pulley
+beltTensionerType = 2; // 0 = No separate tensioner, 1 = Separate tensioner, any other: External belt tensioner
 
 bodyWidth = 50;
 // Calculated values
-checkBodyHeight(linearBearingHeight, GapBetweenLinearBearings, smoothRodRadius, distanceBetweenSmoothRods);
-bodyHeight = calculateBodyHeight(linearBearingHeight, GapBetweenLinearBearings, smoothRodRadius, distanceBetweenSmoothRods);
+checkBodyHeight(linearBearingHeight, gapBetweenLinearBearings, smoothRodRadius, distanceBetweenSmoothRods);
+bodyHeight = calculateBodyHeight(linearBearingHeight, gapBetweenLinearBearings, smoothRodRadius, distanceBetweenSmoothRods);
 
-use <Modules.scad>
+include <Modules.scad>
 
 difference() 
 {
@@ -16,7 +15,7 @@ difference()
     mainBody(bodyWidth, bodyHeight, leadRodCouplingHeight, linearBearingOuterRadius, leadRodCouplingOuterRadius, distanceBetweenLinearBearingAndLeadRod, distanceBetweenSmoothRodAndLinearBearing, leadRodYaxisOffset);
     
     // Sutract
-    smoothRodAndBeltCavity(bodyWidth, bodyHeight, smoothRodRadius, smoothRodInsertLength, distanceBetweenSmoothRods, beltTensionVoidHeight, beltTensionVoidWidth, beltTensionVoidLength, BeltTensionVoidVerticalOffset);
+    smoothRodAndBeltCavity(bodyWidth, bodyHeight, smoothRodRadius, smoothRodInsertLength, distanceBetweenSmoothRods, beltTensionVoidHeight, beltTensionVoidWidth, beltTensionVoidLength, beltTensionVoidVerticalOffset);
     LinearBearingSubs(bodyHeight, linearBearingInnerRadius, linearBearingOuterRadius, distanceBetweenSmoothRodAndLinearBearing);
     LeadCouplingSubs(leadRodCouplingHeight, distanceBetweenSmoothRodAndLinearBearing, linearBearingOuterRadius, leadRodCouplingInnerRadius, distanceBetweenLinearBearingAndLeadRod, leadRodYaxisOffset, leadRodScrewHoleDistance, leadRodScrewHoleRadius, leadRodBearingType);
 }
@@ -38,7 +37,7 @@ module LinearBearingHousingExtras(bodyHeight, linearBearingOuterRadius, linearBe
 
 module mainBody(width, height, leadHeight, linearRadius, leadRadius, linearLeadDist, linearYOffset, leadRodYaxisOffset)
 {
-    cubeWithVerticalFillets(width, 18, height, 3);
+    cubeWithVerticalFillets(width, bodyLength, height, 3);
     
     // Linear bearing housing
     linearBearingYPos = 9 - linearYOffset;
@@ -54,9 +53,15 @@ module mainBody(width, height, leadHeight, linearRadius, leadRadius, linearLeadD
 module LinearBearingSubs(height, linearInnerRadius, linearOuterRadius, yOffset)
 {
     linearBearingYPos = 9 - yOffset;
+
+    //  main hole
     translate([linearOuterRadius + 5, linearBearingYPos, -fudge]) cylinder(h = height + fudge * 2, r = linearInnerRadius);
+    
+    //join smoothings R,L
     translate([7 + (linearOuterRadius * 2), -2, 10]) cylinder(h = height - 10 + fudge, r = 2);
     translate([3, -2, -fudge]) cylinder(h = height + fudge * 2, r = 2);
+    
+    //LM8UU holder gap
     translate([linearOuterRadius + 5, linearBearingYPos, height / 2 - fudge]) rotate(a = -15, v = [0, 0, 1]) translate([1.5, 1.5 - linearOuterRadius, 0]) cube([3, 4, height + fudge * 3], center = true);
     translate([linearOuterRadius + 5, linearBearingYPos, height / 2 - fudge]) rotate(a = 15, v = [0, 0, 1]) translate([-1.5, 1.5 -linearOuterRadius, 0]) cube([3, 4, height + fudge * 3], center = true);
 }
@@ -77,10 +82,10 @@ module LeadCouplingSubs(height, yOffset, linearBearingOuterRadius, leadRodCoupli
         translate([leadCouplingXPos, leadCouplingYPos, -fudge]) rotate(a = 315, v = [0,0,1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) cylinder(h = height + fudge * 2, r = leadRodScrewHoleRadius);
         
         // Screw voids
-        translate([leadCouplingXPos, leadCouplingYPos, height]) rotate(a = 45, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) cylinder(h = 7, r = 3.6);
-        translate([leadCouplingXPos, leadCouplingYPos, height + 7]) rotate(a = 45, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance]) sphere(r = 3.6);
-        translate([leadCouplingXPos, leadCouplingYPos, height]) rotate(a = 315, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) cylinder(h = 7, r = 3.6);
-        translate([leadCouplingXPos, leadCouplingYPos, height + 7]) rotate(a = 315, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) sphere(r = 3.6);
+        translate([leadCouplingXPos, leadCouplingYPos, height]) rotate(a = 45, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) cylinder(h = 7, r = leadRodScrewCavityRadius);
+        translate([leadCouplingXPos, leadCouplingYPos, height + 7]) rotate(a = 45, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance]) sphere(r = leadRodScrewCavityRadius);
+        translate([leadCouplingXPos, leadCouplingYPos, height]) rotate(a = 315, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) cylinder(h = 7, r = leadRodScrewCavityRadius);
+        translate([leadCouplingXPos, leadCouplingYPos, height + 7]) rotate(a = 315, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) sphere(r = leadRodScrewCavityRadius);
     } 
     else if (leadRodBearingType == 1)
     {
@@ -91,29 +96,27 @@ module LeadCouplingSubs(height, yOffset, linearBearingOuterRadius, leadRodCoupli
         translate([leadCouplingXPos, leadCouplingYPos, -fudge]) rotate(a = 285, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) cylinder(h = height + fudge * 2, r = leadRodScrewHoleRadius);
         
         //Screw void
-        translate([leadCouplingXPos, leadCouplingYPos, height]) rotate(a = 45, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) cylinder(h = 7, r = 3.1);
-        translate([leadCouplingXPos, leadCouplingYPos, height + 7]) rotate(a = 45, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance]) sphere(r = 3.1);
+        translate([leadCouplingXPos, leadCouplingYPos, height]) rotate(a = 45, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance, 0]) cylinder(h = 7, r = leadRodScrewCavityRadius);
+        translate([leadCouplingXPos, leadCouplingYPos, height + 7]) rotate(a = 45, v = [0, 0, 1]) translate([0, leadRodCouplingInnerRadius + leadRodScrewHoleDistance]) sphere(r = leadRodScrewCavityRadius);
     }
         
 }
 
-module smoothRodAndBeltCavity(width, height, smoothRodRadius, smoothRodInsertLength, distanceBetweenSmoothRods, beltTensionVoidHeight, beltTensionVoidWidth, beltTensionVoidLength, BeltTensionVoidVerticalOffset) 
+module smoothRodAndBeltCavity(width, height, smoothRodRadius, smoothRodInsertLength, distanceBetweenSmoothRods, beltTensionVoidHeight, beltTensionVoidWidth, beltTensionVoidLength, beltTensionVoidVerticalOffset) 
 {   
     leadCouplingXPos = linearBearingOuterRadius + 5 + distanceBetweenLinearBearingAndLeadRod;
     // Smooth rod cavity
     smoothRodCavityOffset = max(0, width - smoothRodInsertLength) - fudge;
-    echo((height / 2) - (distanceBetweenSmoothRods / 2));
-    echo((height / 2) + (distanceBetweenSmoothRods / 2));
-    translate([smoothRodCavityOffset, 9, (height / 2) - (distanceBetweenSmoothRods / 2)]) rotate(a = 90, v = [0, 1, 0]) cylinder(h = smoothRodInsertLength + fudge * 2, r = smoothRodRadius);
-    translate([smoothRodCavityOffset, 9, (height / 2) + (distanceBetweenSmoothRods / 2)]) rotate(a = 90, v = [0, 1, 0]) cylinder(h = smoothRodInsertLength + fudge * 2, r = smoothRodRadius);
+    translate([smoothRodCavityOffset, 9, (height - distanceBetweenSmoothRods) / 2]) rotate(a = 90, v = [0, 1, 0]) cylinder(h = smoothRodInsertLength + fudge * 2, r = smoothRodRadius);
+    translate([smoothRodCavityOffset, 9, (height + distanceBetweenSmoothRods) / 2]) rotate(a = 90, v = [0, 1, 0]) cylinder(h = smoothRodInsertLength + fudge * 2, r = smoothRodRadius);
     
 	if (beltTensionerType == 0)
 	{
 		// Belt Cavity
-		translate([-fudge, 4, ((height / 2) - (beltTensionVoidHeight / 2))]) cubeWithXHorizontalFillets(smoothRodInsertLength + 5 + fudge * 2, beltTensionVoidWidth, beltTensionVoidHeight, 8);
-		translate([leadCouplingXPos, 1.5, 30]) rotate(a = 90, v = [1, 0, 0]) cylinder(h = 1.5 + fudge, r = 3.5);
-		translate([leadCouplingXPos, 18 + fudge, 30]) rotate(a = 90, v = [1, 0, 0]) cylinder(h = 18 + fudge, r = beltTensionerScrewHoleRadius);
-		translate([leadCouplingXPos, 18 + fudge, 30]) rotate(a = 90, v = [1, 0, 0]) cylinder(h = 1.5 + fudge, r = beltTensionerScrewHoleRadius * 2, $fn = 6);
+		translate([-fudge, 4, ((height / 2) - (beltTensionVoidHeight / 2))])
+            cubeWithXHorizontalFillets(bodyWidth + fudge * 2, beltTensionVoidWidth, beltTensionVoidHeight, 8);
+		translate([leadCouplingXPos, 0, 30]) rotate(a = -90, v = [1, 0, 0])
+            ScrewHole(bodyLength, beltTensionerScrewHoleRadius, beltTensionerScrewHeadRadius, 1.5, beltTensionerNutRadius, 1.5);
 	}
 	else if (beltTensionerType == 1)
 	{
@@ -122,6 +125,12 @@ module smoothRodAndBeltCavity(width, height, smoothRodRadius, smoothRodInsertLen
 		translate([-fudge, 9, 30]) rotate(a = 90, v = [0, 1, 0]) cylinder(h = 1.5 + fudge, r = beltTensionerScrewHoleRadius * 2);
 		translate([0, 9, 30]) rotate(a = 90, v = [0, 1, 0]) cylinder(h = 5 + fudge * 2, r = beltTensionerScrewHoleRadius);
 	}
+    else
+    {
+		// Belt Cavity
+		translate([-fudge, 4, ((height / 2) - (beltTensionVoidHeight / 2))])
+            cubeWithXHorizontalFillets(bodyWidth + fudge * 2, beltTensionVoidWidth, beltTensionVoidHeight, 8);
+    }
 }
 
 
